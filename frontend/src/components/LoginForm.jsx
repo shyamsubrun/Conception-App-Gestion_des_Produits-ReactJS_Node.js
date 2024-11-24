@@ -7,20 +7,21 @@ const LoginForm = ({ onLogin }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleLogin = () => {
-    console.log('Données envoyées :', { email, password }); // Log des données
+  const handleLogin = async () => {
+    const loginData = { email, password };
+    console.log('Données envoyées :', loginData); // Log pour vérifier les données envoyées
   
-    axios
-      .post('http://localhost:3000/api/auth/login', { email, password })
-      .then((response) => {
-        onLogin(response.data.token); // Passe le token à l'application principale
-        setError('');
-      })
-      .catch((error) => {
-        setError('Erreur lors de la connexion. Vérifiez vos informations.');
-        console.error('Erreur de connexion :', error);
-      });
+    try {
+      const response = await axios.post('http://localhost:3000/api/auth/login', loginData);
+      console.log('Réponse du serveur :', response.data); // Log de la réponse
+      onLogin(response.data.token);
+    } catch (error) {
+      console.error('Erreur de connexion :', error.response?.data || error.message);
+      setError('Erreur lors de la connexion. Vérifiez vos informations.');
+    }
   };
+  
+  
   
 
   return (

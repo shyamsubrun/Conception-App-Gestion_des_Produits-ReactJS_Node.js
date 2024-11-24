@@ -54,29 +54,28 @@ router.post(
     body('password').exists().withMessage('Mot de passe requis'),
   ],
   async (req, res) => {
+    console.log('Requête reçue :', req.body); // Log des données reçues
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('Erreurs de validation :', errors.array()); // Log des erreurs de validation
       return res.status(400).json({ errors: errors.array() });
     }
 
     const { email, password } = req.body;
 
     try {
-      // Recherche de l'utilisateur
       const user = await User.findOne({ email });
       if (!user) {
         return res.status(400).json({ error: 'Utilisateur non trouvé' });
       }
 
-      // Vérifie le mot de passe
       const isPasswordValid = await bcrypt.compare(password, user.password);
       if (!isPasswordValid) {
         return res.status(400).json({ error: 'Mot de passe incorrect' });
       }
 
-      // Génère un token JWT
       const token = jwt.sign({ email: user.email }, JWT_SECRET, { expiresIn: '1h' });
-
       res.json({ message: 'Connexion réussie', token });
     } catch (err) {
       console.error('Erreur serveur :', err);
@@ -84,5 +83,6 @@ router.post(
     }
   }
 );
+
 
 module.exports = router;

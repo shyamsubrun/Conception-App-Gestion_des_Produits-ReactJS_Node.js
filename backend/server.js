@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors'); // Déclaré une seule fois
 require('dotenv').config();
+const { createDefaultUser } = require('./init'); // Importer le script d'initialisation
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -17,10 +18,13 @@ app.use(cors(corsOptions));
 // Middleware pour traiter le JSON
 app.use(express.json());
 
-// Connect to MongoDB
+// Connexion à MongoDB
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => console.log('MongoDB connecté'))
+  .then(() => {
+    console.log('MongoDB connecté');
+    createDefaultUser(); // Créer l'utilisateur par défaut
+  })
   .catch((err) => console.error('Erreur MongoDB :', err));
 
 // Import des routes
