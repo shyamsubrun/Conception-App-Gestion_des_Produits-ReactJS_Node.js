@@ -19,6 +19,7 @@ const ProductList = ({ token }) => {
   const dispatch = useDispatch();
   const { products, loading, error } = useSelector((state) => state.products); // Redux state
   const [editingRow, setEditingRow] = useState(null);
+  const [editedProduct, setEditedProduct] = useState({});
   const [showAddForm, setShowAddForm] = useState(false);
   const [newProduct, setNewProduct] = useState({
     name: '',
@@ -62,7 +63,10 @@ const ProductList = ({ token }) => {
 
   // Sauvegarder les modifications
   const handleSave = async (id) => {
-    const updatedProduct = products.find((product) => product._id === id);
+    const updatedProduct = {
+      ...products.find((product) => product._id === id),
+      ...editedProduct[id],
+    };
 
     try {
       await axios.put(`http://localhost:3000/api/products/${id}`, updatedProduct, {
@@ -72,18 +76,41 @@ const ProductList = ({ token }) => {
       });
       dispatch(fetchProducts());
       setEditingRow(null);
+      setEditedProduct((prevState) => {
+        const newState = { ...prevState };
+        delete newState[id];
+        return newState;
+      });
       console.log('Produit mis à jour avec succès');
     } catch (error) {
       console.error('Erreur lors de la mise à jour du produit:', error);
     }
   };
 
+  // Supprimer un produit
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`http://localhost:3000/api/products/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      dispatch(fetchProducts()); // Recharge les produits
+      console.log('Produit supprimé avec succès');
+    } catch (error) {
+      console.error('Erreur lors de la suppression du produit:', error);
+    }
+  };
+
   // Modifier un produit localement
   const handleChange = (id, field, value) => {
-    const updatedProducts = products.map((product) =>
-      product._id === id ? { ...product, [field]: value } : product
-    );
-    dispatch({ type: 'products/updateProducts', payload: updatedProducts }); // Mise à jour locale
+    setEditedProduct((prevState) => ({
+      ...prevState,
+      [id]: {
+        ...prevState[id],
+        [field]: value,
+      },
+    }));
   };
 
   // Gérer le formulaire d'ajout
@@ -171,7 +198,7 @@ const ProductList = ({ token }) => {
                 <TableCell>
                   {editingRow === product._id ? (
                     <TextField
-                      value={product.name}
+                      value={editedProduct[product._id]?.name ?? product.name}
                       onChange={(e) => handleChange(product._id, 'name', e.target.value)}
                     />
                   ) : (
@@ -181,7 +208,7 @@ const ProductList = ({ token }) => {
                 <TableCell>
                   {editingRow === product._id ? (
                     <TextField
-                      value={product.type}
+                      value={editedProduct[product._id]?.type ?? product.type}
                       onChange={(e) => handleChange(product._id, 'type', e.target.value)}
                     />
                   ) : (
@@ -192,7 +219,7 @@ const ProductList = ({ token }) => {
                   {editingRow === product._id ? (
                     <TextField
                       type="number"
-                      value={product.price}
+                      value={editedProduct[product._id]?.price ?? product.price}
                       onChange={(e) =>
                         handleChange(product._id, 'price', parseFloat(e.target.value) || 0)
                       }
@@ -205,7 +232,7 @@ const ProductList = ({ token }) => {
                   {editingRow === product._id ? (
                     <TextField
                       type="number"
-                      value={product.rating}
+                      value={editedProduct[product._id]?.rating ?? product.rating}
                       onChange={(e) =>
                         handleChange(product._id, 'rating', parseFloat(e.target.value) || 0)
                       }
@@ -218,9 +245,13 @@ const ProductList = ({ token }) => {
                   {editingRow === product._id ? (
                     <TextField
                       type="number"
-                      value={product.warranty_years}
+                      value={editedProduct[product._id]?.warranty_years ?? product.warranty_years}
                       onChange={(e) =>
-                        handleChange(product._id, 'warranty_years', parseInt(e.target.value) || 0)
+                        handleChange(
+                          product._id,
+                          'warranty_years',
+                          parseInt(e.target.value) || 0
+                        )
                       }
                     />
                   ) : (
@@ -230,9 +261,17 @@ const ProductList = ({ token }) => {
                 <TableCell>
                   {editingRow === product._id ? (
                     <TextField
-                      value={product.available ? 'Oui' : 'Non'}
+                      value={editedProduct[product._id]?.available
+                        ? 'Oui'
+                        : product.available
+                        ? 'Oui'
+                        : 'Non'}
                       onChange={(e) =>
-                        handleChange(product._id, 'available', e.target.value.toLowerCase() === 'oui')
+                        handleChange(
+                          product._id,
+                          'available',
+                          e.target.value.toLowerCase() === 'oui'
+                        )
                       }
                     />
                   ) : (
@@ -245,6 +284,7 @@ const ProductList = ({ token }) => {
                       variant="contained"
                       color="primary"
                       onClick={() => handleSave(product._id)}
+                      sx={{ mr: 1 }}
                     >
                       Sauvegarder
                     </Button>
@@ -253,10 +293,18 @@ const ProductList = ({ token }) => {
                       variant="outlined"
                       color="secondary"
                       onClick={() => setEditingRow(product._id)}
+                      sx={{ mr: 1 }}
                     >
                       Modifier
                     </Button>
                   )}
+                  <Button
+                    variant="contained"
+                    color="error"
+                    onClick={() => handleDelete(product._id)}
+                  >
+                    Supprimer
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
