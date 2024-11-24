@@ -65,9 +65,31 @@ Ce projet est une solution complète de gestion des produits utilisant **ReactJS
 
 ---
 
-## **Instructions pour Lancer le Projet**
+## **Gestion des Erreurs**
 
-### **1. Clonez le projet**
-```bash
-git clone https://github.com/votre-dépôt.git
-cd votre-dépôt
+### **1. Port Occupé (`EADDRINUSE`)**
+- Si une erreur indique que le port est déjà utilisé :
+1. Vérifiez quel processus utilise le port :
+   ```bash
+   - lsof -i :3000
+
+   - kill -9 <PID>
+
+### **2.Permission denied**
+- Si une erreur indique que Permission denied :
+   ```bash
+  - rm -rf node_modules
+
+  - npm install
+
+---
+
+## **Captures d'écrans**
+
+![screencapture-localhost-3001-2024-11-24-14_51_48](https://github.com/user-attachments/assets/62d7d867-800f-44d1-988c-76f2b48862f1)
+
+
+![screencapture-localhost-3001-2024-11-24-14_51_15](https://github.com/user-attachments/assets/eb56d8bf-ffcc-454d-8a9d-464797addb56)
+
+
+![screencapture-localhost-3001-2024-11-24-14_51_31](https://github.com/user-attachments/assets/182e8a23-a6dd-4e81-b787-52ec458d5552)
